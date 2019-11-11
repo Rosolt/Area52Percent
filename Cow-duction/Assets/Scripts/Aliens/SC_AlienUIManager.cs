@@ -55,6 +55,20 @@ public class SC_AlienUIManager : MonoBehaviour
         // Retrieve UFO rigidbody
         _rbUFO = GameObject.Find("UFO").GetComponent<Rigidbody>();
         ufoMesh = _rbUFO.GetComponentsInChildren<MeshRenderer>();
+        // Initialize values for private variables
+        score = 0;
+        scoreText.text = score.ToString("D2");
+        cowIcon.enabled = false;
+        fuel = 100.0f;
+        abilityCooldown = 100.0f;
+        cooldownActive = false;
+        timeRemaining = 240.0f;
+        timeScaleFactor = 1.0f;
+        // Deactivate non-gameplay menus
+        endScreen.SetActive(false);
+        parameterScreen.SetActive(false);
+        helpScreen.SetActive(false);
+        Debug.Log(fuel);
     }
 
     // Start is called before the first frame update
@@ -73,6 +87,7 @@ public class SC_AlienUIManager : MonoBehaviour
         endScreen.SetActive(false);
         parameterScreen.SetActive(false);
         helpScreen.SetActive(false);
+        Debug.Log(fuel);
     }
 
     // Update is called once per frame
@@ -81,8 +96,8 @@ public class SC_AlienUIManager : MonoBehaviour
         // Display speed and altitude
         speedText.text = _rbUFO.velocity.magnitude.ToString("F1");
         altitudeText.text = _rbUFO.transform.position.y.ToString("F1");
-        
         // Update fuel meter display
+        Debug.Log(fuel);
         if (fuel > 0.0f)
         {
             if (!fuelWarnText.enabled && fuel < fuelWarnAmount)

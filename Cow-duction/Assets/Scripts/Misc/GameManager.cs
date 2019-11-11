@@ -20,6 +20,7 @@ public class GameManager : MonoBehaviour
     {
         ufo = GameObject.Find("UFO");
         uiManager = GameObject.FindWithTag("UIManager").GetComponent<SC_AlienUIManager>();
+        uiManager.GetComponentInParent<GameObject>().SetActive(false);
     }
 
     // Load the active scene

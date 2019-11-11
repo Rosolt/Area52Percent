@@ -6,21 +6,58 @@ using UnityEngine.Networking.NetworkSystem;
 
 public class NetworkManagerOverride : NetworkManager
 {
-    public override void OnClientConnect(NetworkConnection conn)
+
+    public class NetworkMessage : MessageBase
     {
-        base.OnClientConnect(conn);
-        Debug.Log(conn.hostId);
-        if(conn.hostId != -1)
+        public int chosenClass;
+    }
+
+    public override void OnServerAddPlayer(NetworkConnection conn, short playerControllerId, NetworkReader extraMessageReader)
+    {
+        NetworkMessage message = extraMessageReader.ReadMessage<NetworkMessage>();
+        int selectedClass = message.chosenClass;
+        Debug.Log("selected class = " + selectedClass);
+        GameObject player;
+        Transform startPos = GetStartPosition();
+
+        if(startPos != null)
         {
-            Debug.Log("Farmer");
-            GameObject player = Instantiate(Resources.Load("FarmerPlayer"), transform.position, Quaternion.identity) as GameObject;
-            NetworkServer.AddPlayerForConnection(conn, player, 0);
+            if(selectedClass == 0)
+            {
+                player = Instantiate(Resources.Load("Spaceship"), startPos.position, Quaternion.identity) as GameObject;
+                NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
+            }
         }
         else
         {
-            Debug.Log("UFO");
-            GameObject player = Instantiate(Resources.Load("Spaceship"), transform.position, Quaternion.identity) as GameObject;
-            NetworkServer.AddPlayerForConnection(conn, player, 0);
+            if(selectedClass == 0)
+            {
+                player = Instantiate(Resources.Load("Spaceship"), transform.position, Quaternion.identity) as GameObject;
+                NetworkServer.AddPlayerForConnection(conn, player, playerControllerId);
+            }
         }
+
+    }
+
+    public override void OnClientConnect(NetworkConnection conn)
+    {
+        NetworkMessage test = new NetworkMessage();
+        GameObject player;
+        if (conn.hostId == -1)
+        {
+            test.chosenClass = 0;
+            player = player = Instantiate(Resources.Load("Spaceship"), transform.position, Quaternion.identity) as GameObject;
+        }
+        else
+        {
+            test.chosenClass = 1;
+            player = Instantiate(Resources.Load("FarmerPlayer"), transform.position, Quaternion.identity) as GameObject;
+        }
+        ClientScene.RegisterPrefab(player);
+        ClientScene.AddPlayer(conn, 0, test);
+    }
+
+    public override void OnStartClient(NetworkClient client)
+    {
     }
 }

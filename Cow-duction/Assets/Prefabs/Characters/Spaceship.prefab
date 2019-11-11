@@ -5002,6 +5002,7 @@ GameObject:
   - component: {fileID: 8565247539897450750}
   - component: {fileID: -6837265065005398451}
   - component: {fileID: 6800737823521276473}
+  - component: {fileID: -3647435194409230056}
   m_Layer: 0
   m_Name: Spaceship
   m_TagString: UFO
@@ -5093,6 +5094,18 @@ MonoBehaviour:
   m_SnapThreshold: 5
   m_InterpolateRotation: 1
   m_InterpolateMovement: 1
+--- !u!114 &-3647435194409230056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4216782513672971233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4f7738823f9698438be54be588ec30d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4258652796244822547
 GameObject:
   m_ObjectHideFlags: 0

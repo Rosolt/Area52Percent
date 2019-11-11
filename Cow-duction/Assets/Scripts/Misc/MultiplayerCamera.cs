@@ -15,7 +15,6 @@ public class MultiplayerCamera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Debug.Log(!this.transform.parent.GetComponent<FirstPersonController>().isActiveAndEnabled);
         if (!this.transform.parent.GetComponent<FirstPersonController>().isActiveAndEnabled)
         {
             gameObject.GetComponent<Camera>().enabled = false;
