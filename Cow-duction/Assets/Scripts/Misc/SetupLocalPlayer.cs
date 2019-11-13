@@ -6,6 +6,12 @@ using UnityStandardAssets.Characters.FirstPerson;
 
 public class SetupLocalPlayer : NetworkBehaviour
 {
+    [SyncVar]
+    public string pname = "player";
+
+    [SyncVar]
+    public GameObject player;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -15,6 +21,12 @@ public class SetupLocalPlayer : NetworkBehaviour
             {
                 GetComponent<SC_CowAbduction>().enabled = true;
                 GetComponent<SC_SpaceshipMovement>().enabled = true;
+
+                Renderer[] rends = GetComponentsInChildren<Renderer>();
+                foreach (Renderer r in rends)
+                {
+                    r.material.color = Color.blue;
+                }
             }
             else
             {

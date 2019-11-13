@@ -57,7 +57,4 @@ public class NetworkManagerOverride : NetworkManager
         ClientScene.AddPlayer(conn, 0, test);
     }
 
-    public override void OnStartClient(NetworkClient client)
-    {
-    }
 }

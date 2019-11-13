@@ -68,7 +68,6 @@ public class SC_AlienUIManager : MonoBehaviour
         endScreen.SetActive(false);
         parameterScreen.SetActive(false);
         helpScreen.SetActive(false);
-        Debug.Log(fuel);
     }
 
     // Start is called before the first frame update
@@ -87,7 +86,6 @@ public class SC_AlienUIManager : MonoBehaviour
         endScreen.SetActive(false);
         parameterScreen.SetActive(false);
         helpScreen.SetActive(false);
-        Debug.Log(fuel);
     }
 
     // Update is called once per frame
@@ -97,7 +95,6 @@ public class SC_AlienUIManager : MonoBehaviour
         speedText.text = _rbUFO.velocity.magnitude.ToString("F1");
         altitudeText.text = _rbUFO.transform.position.y.ToString("F1");
         // Update fuel meter display
-        Debug.Log(fuel);
         if (fuel > 0.0f)
         {
             if (!fuelWarnText.enabled && fuel < fuelWarnAmount)

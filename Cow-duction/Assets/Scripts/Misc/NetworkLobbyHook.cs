@@ -14,9 +14,14 @@ public class NetworkLobbyHook : LobbyHook
         if (lobby.playerName == "Player 1")
         {
             Debug.Log("UFO");
+            localPlayer.pname = lobby.name;
+            localPlayer.player = Instantiate(Resources.Load("Spaceship"), transform.position, Quaternion.identity) as GameObject;
+            Debug.Log(lobby.localIcone);
         }
         else
         {
+            localPlayer.pname = lobby.name;
+            localPlayer.player = Instantiate(Resources.Load("FarmerPlayer"), transform.position, Quaternion.identity) as GameObject;
             Debug.Log("Farmer");
         }
     }
