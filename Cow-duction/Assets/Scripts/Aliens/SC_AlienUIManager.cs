@@ -12,6 +12,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class SC_AlienUIManager : MonoBehaviour
 {
@@ -47,7 +48,7 @@ public class SC_AlienUIManager : MonoBehaviour
     public Text finalScoreText;
     public GameObject helpScreen;
     public GameObject parameterScreen;
-
+    public List<Slider> _Sliders;
     // Awake is called after all objects are initialized
     void Awake()
     {
@@ -70,7 +71,13 @@ public class SC_AlienUIManager : MonoBehaviour
         endScreen.SetActive(false);
         parameterScreen.SetActive(false);
         helpScreen.SetActive(false);
-
+        foreach (Slider s in _Sliders)
+        {
+            if (PlayerPrefs.HasKey(s.name))
+            {
+                SetValue(s.name, PlayerPrefs.GetFloat(s.name));
+            }
+        }
     }
 
     // Update is called once per frame
@@ -231,8 +238,32 @@ public class SC_AlienUIManager : MonoBehaviour
     public void SetParameter(Slider slider)
     {
         float value = slider.value;
-        switch(slider.name)
-        {            
+        string name = slider.name;
+        SetValue(name, value);
+        PlayerPrefs.SetFloat(name, value);
+        PlayerPrefs.Save();
+    }
+
+    // Reset gameplay variables to starting values
+    public void ResetGame()
+    {
+        Start();
+    }
+
+    // Exit the game or editor play session
+    public void ExitGame()
+    {
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    public void SetValue(string name, float value)
+    {
+        switch (name)
+        {
             case "HorizontalSpeedSlider":
                 _rbUFO.GetComponent<SC_SpaceshipMovement>().horizontalSpeed = value;
                 break;
@@ -248,7 +279,7 @@ public class SC_AlienUIManager : MonoBehaviour
             case "RotationForceSlider":
                 _rbUFO.GetComponent<SC_SpaceshipMovement>().rotationForce = value;
                 break;
-            case "MainCameraFovSlider": 
+            case "MainCameraFovSlider":
                 Camera.main.fieldOfView = value;
                 break;
             case "RadarCameraFovSlider":
@@ -291,26 +322,10 @@ public class SC_AlienUIManager : MonoBehaviour
                 CowSpawner.GetComponent<SC_CowSpawner>().maxCowAmount = (int)value;
                 break;
             case "CowSpawnRateSlider":
-                CowSpawner.GetComponent<SC_CowSpawner>().spawnRate = (int)value;
+                CowSpawner.GetComponent<SC_CowSpawner>().spawnRate = value;
                 break;
             default:
                 break;
         }
-    }
-
-    // Reset gameplay variables to starting values
-    public void ResetGame()
-    {
-        Start();
-    }
-
-    // Exit the game or editor play session
-    public void ExitGame()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-        Application.Quit();
-#endif
     }
 }
