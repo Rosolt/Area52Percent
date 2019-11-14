@@ -15,7 +15,7 @@ public class SetupLocalPlayer : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if(isLocalPlayer)
+        if (isLocalPlayer)
         {
             if ((gameObject.GetComponent("SC_Cow Abduction") as SC_CowAbduction) != null)
             {
@@ -36,5 +36,4 @@ public class SetupLocalPlayer : NetworkBehaviour
             }
         }
     }
-
 }
