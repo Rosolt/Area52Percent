@@ -12,18 +12,30 @@ using System.Collections.Generic;
 
 public class SC_CowSpawner : MonoBehaviour
 {
-    public GameObject cowPrefab;
-    [SerializeField] private GameObject[] cows = null; // Set up in inspector
-    [SerializeField] private float[] cowSpawnRatios = null; // Set up in inspector (as decimal out of 1, last ratio should be 1 to guarantee something spawns)
+    // Private variables
+    private GameObject UFOLoc;
+    private List<GameObject> spawnPoints;
+    private int cowAmount = 0;
+
+    // Public variables
+    [Header("Public")]
     public int maxCowAmount = 10;
     public float radius = 10.0f;
     public float spawnRate = 5f;
     public int intialSpawnAmount = 9;
-    [SerializeField] private float randomFactor = 0.1f;
-    private List<GameObject> spawnPoints;
-    public GameObject UFOLoc;
+    public float randomFactor = 0.1f;
 
-    [SerializeField] private int cowAmount = 0;
+    // Serialized private variables
+    [Header("Private")]
+    [SerializeField] private GameObject cowPrefab; // Deprecated by cows array
+    [SerializeField] private GameObject[] cows = null; // Set up in inspector
+    [SerializeField] private float[] cowSpawnRatios = null; // Set up in inspector (as decimal out of 1, last ratio should be 1 to guarantee something spawns)
+
+    // Get current cow amount
+    public int GetCowAmount()
+    {
+        return cowAmount;
+    }
 
     // Awake is called after all objects are initialized
     void Awake()
@@ -66,7 +78,7 @@ public class SC_CowSpawner : MonoBehaviour
             {
                 // ((1 + (k/n)) ^ n) / e ^ k where n is the distance between the ufo a given spawn
                 float fx = ( (Mathf.Pow(1 + (5 / Vector3.Distance(spawnPoints[i].transform.position, UFOLoc.transform.position)), Vector3.Distance(spawnPoints[i].transform.position, UFOLoc.transform.position)) / Mathf.Exp(5)));
-                Debug.Log(i + "?" + Vector3.Distance(spawnPoints[i].transform.position, UFOLoc.transform.position) + "-" + fx);
+                // Debug.Log(i + "?" + Vector3.Distance(spawnPoints[i].transform.position, UFOLoc.transform.position) + "-" + fx);
                 ElapsedTimes[i] = spawnPoints[i].GetComponent<SpawnPointTimer>().elapsedTime * fx;
             }
             float MaxSinceLastSpawn = Mathf.Max(ElapsedTimes);
@@ -100,27 +112,28 @@ public class SC_CowSpawner : MonoBehaviour
         }
     }
 
+    // Randomizes cow parameters
     private void RandomizeCow(GameObject cow)
     {
         SC_CowBrain cowBrain = cow.GetComponent<SC_CowBrain>();
         Rigidbody cowRigidbody = cow.GetComponent<Rigidbody>();
 
-        float mass = cowRigidbody.mass;
-        float size = cow.transform.localScale.x; // Assume scale is uniform
-        float milk = cowBrain.GetMilk();
-        float maxSpeed = cowBrain.GetMaxSpeed();
-        float maxWanderTime = cowBrain.GetMaxWanderTime();
+        float _mass = cowRigidbody.mass;
+        float _size = cow.transform.localScale.x; // Assume scale is uniform
+        float _milk = cowBrain.milk;
+        float _maxSpeed = cowBrain.maxSpeed;
+        float _maxWanderTime = cowBrain.maxWanderTime;
 
-        size = Random.Range(size - (size * randomFactor), size + (size * randomFactor));
-        mass = Random.Range(mass - (mass * randomFactor), mass + (mass * randomFactor)) + size;
-        milk = Random.Range(milk - (milk * randomFactor), milk + (milk * randomFactor)) + size;
-        maxSpeed = Random.Range(maxSpeed - (maxSpeed * randomFactor), maxSpeed + (maxSpeed * randomFactor)) + size;
-        maxWanderTime = Random.Range(maxWanderTime - (maxWanderTime * randomFactor), maxWanderTime + (maxWanderTime * randomFactor)) - size;
+        _size = Random.Range(_size - (_size * randomFactor), _size + (_size * randomFactor));
+        _mass = Random.Range(_mass - (_mass * randomFactor), _mass + (_mass * randomFactor)) + _size;
+        _milk = Random.Range(_milk - (_milk * randomFactor), _milk + (_milk * randomFactor)) + _size;
+        _maxSpeed = Random.Range(_maxSpeed - (_maxSpeed * randomFactor), _maxSpeed + (_maxSpeed * randomFactor)) + _size;
+        _maxWanderTime = Random.Range(_maxWanderTime - (_maxWanderTime * randomFactor), _maxWanderTime + (_maxWanderTime * randomFactor)) - _size;
 
-        cowRigidbody.mass = mass;
-        cow.transform.localScale *= size;
-        cowBrain.SetMilk(milk);
-        cowBrain.SetMaxSpeed(maxSpeed);
-        cowBrain.SetMaxWanderTime(maxWanderTime);
+        cowRigidbody.mass = _mass;
+        cow.transform.localScale *= _size;
+        cowBrain.milk = _milk;
+        cowBrain.maxSpeed = _maxSpeed;
+        cowBrain.maxWanderTime = _maxWanderTime;
     }
 }

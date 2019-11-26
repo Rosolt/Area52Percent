@@ -11,11 +11,9 @@ using UnityEngine;
 
 public class SC_RadarCamera : MonoBehaviour
 {
-    // Private variables
     private GameObject followObject;
 
-    // Serialized private variables
-    [SerializeField] private float height = 15.0f;
+    public float height = 15.0f;
 
     // Awake is called after all objects are initialized
     void Awake()
@@ -23,7 +21,7 @@ public class SC_RadarCamera : MonoBehaviour
         followObject = GameObject.Find("UFO");
     }
 
-    // Update is called once per frame
+    // FixedUpdate is called in fixed intervals
     void FixedUpdate()
     {
         if (followObject) {

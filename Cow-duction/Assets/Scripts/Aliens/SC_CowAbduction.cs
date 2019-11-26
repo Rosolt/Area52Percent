@@ -28,10 +28,12 @@ public class SC_CowAbduction : MonoBehaviour
     private GameObject attachedObject;
     private Rigidbody attachedRigidbody;
     private GameObject probeClone;
+    private AudioSource audioSource;
     private float captureLength;
     private bool grappling;
     
     // Public variables
+    [Header("Public")]
     public float grappleTime = 0.5f;
     public float grappleCooldown = 0.5f;
     public float maxCaptureLength = 50.0f;
@@ -39,10 +41,12 @@ public class SC_CowAbduction : MonoBehaviour
     public float captureSpeed = 5.0f;
 
     // Serialized private variables
+    [Header("Private")]
     [SerializeField] private GameObject reticle = null; // Set up in inspector
     [SerializeField] private GameObject probe = null; // Set up in inspector
     [SerializeField] private AudioClip grappleShot = null; // Set up in inspector
     [SerializeField] private AudioClip grappleHit = null; // Set up in inspector
+    [SerializeField] private AudioClip grappleReel = null; // Set up in inspector
     [SerializeField] private AudioClip cowSuction = null; // Set up in inspector
     [SerializeField] private LineRenderer lineRenderer; // (Optional) Set up in inspector
 
@@ -51,6 +55,7 @@ public class SC_CowAbduction : MonoBehaviour
     {
         spaceshipMovement = GetComponent<SC_SpaceshipMovement>();
         uiManager = GameObject.FindWithTag("UIManager").GetComponent<SC_AlienUIManager>();
+        audioSource = GetComponent<AudioSource>();
     }
 
     // Start is called before the first frame update
@@ -73,22 +78,33 @@ public class SC_CowAbduction : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
+        // Convert reticle world coordinates to screen coordinates
+        Vector3 reticlePoint = RectTransformUtility.WorldToScreenPoint(null, reticle.GetComponent<RectTransform>().position);
+        Ray ray = Camera.main.ScreenPointToRay(reticlePoint);
+        RaycastHit hit;
+        // Ignore UFO layer
+        int layerMask = ~(1 << gameObject.layer);
+        
+        // Change reticle color based on object hit by raycast
+        if (Physics.Raycast(ray, out hit, maxCaptureLength, layerMask))
+        {
+            if (hit.transform.tag == "Cow")
+                uiManager.SetReticleColor(Color.blue);
+            else if (hit.transform.tag == "Farmer")
+                uiManager.SetReticleColor(Color.red);
+            else
+                uiManager.SetReticleColor(Color.white);
+        }
+                
         // Left click casts a raycast in the direction of the cursor position.
         if (Input.GetButtonDown("Fire1") && Time.timeScale > Mathf.Epsilon)
         {
             // Do not shoot ray if object is already attached
             if (!attachedObject && !grappling)
             {
-                // Convert reticle world coordinates to screen coordinates
-                Vector3 reticlePoint = RectTransformUtility.WorldToScreenPoint(null, reticle.GetComponent<RectTransform>().position);
-                Ray ray = Camera.main.ScreenPointToRay(reticlePoint);
-                RaycastHit hit;
-                // Ignore UFO layer
-                int layerMask = ~(1 << gameObject.layer);
-                                
-                if (Physics.Raycast(ray, out hit, maxCaptureLength, layerMask))
+                if (hit.transform)
                 {
-                    captureLength = Vector3.Distance(transform.position, hit.transform.position);
+                    captureLength = Vector3.Distance(transform.position, hit.point);
 
                     StartCoroutine(ShootGrapple(hit));
                 }
@@ -123,7 +139,7 @@ public class SC_CowAbduction : MonoBehaviour
             SC_CowBrain brain = attachedObject.GetComponent<SC_CowBrain>();
             if (!brain)
                 brain = attachedObject.GetComponent<SC_FarmerBrain>();
-            if (brain && brain.GetTugWhenGrappled())
+            if (brain && brain.tugWhenGrappled)
             {
                 attachedRigidbody.AddForce((attachedObject.transform.position - transform.position).normalized * attachedRigidbody.mass, ForceMode.Impulse);                
             }
@@ -180,7 +196,7 @@ public class SC_CowAbduction : MonoBehaviour
         if (probe)
             probeClone = Instantiate(probe, transform.position, Quaternion.identity);
         
-        GetComponent<AudioSource>().PlayOneShot(grappleShot, 0.5f);        
+        audioSource.PlayOneShot(grappleShot, 0.5f);
         
         // Extend the grapple
         float counter = 0.0f;
@@ -191,7 +207,7 @@ public class SC_CowAbduction : MonoBehaviour
             RenderLine(probeClone);
             yield return null;
         }
-               
+
         if (!AttachBody(hit))
         {
             // Hang at hit position briefly
@@ -206,7 +222,7 @@ public class SC_CowAbduction : MonoBehaviour
             // Retract the grapple if it did not attach to a cow or farmer
             counter = 0.0f;
             while (counter < grappleTime)
-            {            
+            {
                 counter += Time.fixedDeltaTime / grappleTime;
                 probeClone.transform.position = Vector3.Lerp(hit.point, transform.position, counter / grappleTime);
                 RenderLine(probeClone);
@@ -345,6 +361,13 @@ public class SC_CowAbduction : MonoBehaviour
             uiManager.ToggleReticle();
 
             attachedObject = null;
+
+            // Stop playing grapple reel audio
+            if (audioSource.isPlaying)
+            {
+                audioSource.loop = false;
+                audioSource.Stop();
+            }
         }
     }
 
@@ -365,6 +388,13 @@ public class SC_CowAbduction : MonoBehaviour
                 
                 // Apply force on attached body towards UFO
                 attachedRigidbody.AddForce((transform.position - attachedObject.transform.position).normalized, ForceMode.Acceleration);
+
+                // Play grapple reel audio clip on a loop
+                audioSource.clip = grappleReel;
+                audioSource.loop = true;
+
+                if (!audioSource.isPlaying)
+                    audioSource.Play();
             }
             else
             {
@@ -438,14 +468,21 @@ public class SC_CowAbduction : MonoBehaviour
             lineRenderer.enabled = false;
 
             // Call the UI manager to increase score            
-            uiManager.IncreaseScore(col.GetComponent<SC_CowBrain>().GetMilk());
+            uiManager.IncreaseScore(col.GetComponent<SC_CowBrain>().milk);
             uiManager.ToggleReticle();
 
             // Reset movement penalty
             spaceshipMovement.ResetMovementPenaltyFactor();
 
+            // Stop playing grapple reel audio
+            if (audioSource.isPlaying)
+            {
+                audioSource.loop = false;
+                audioSource.Stop();
+            }
+
             // Play suction audio
-            GetComponent<AudioSource>().PlayOneShot(cowSuction, 0.5f);
+            audioSource.PlayOneShot(cowSuction, 0.5f);
         }
     }
 

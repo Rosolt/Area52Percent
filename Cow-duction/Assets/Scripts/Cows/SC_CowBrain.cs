@@ -16,8 +16,11 @@ using UnityStandardAssets.Characters.FirstPerson;
 [RequireComponent(typeof(NavMeshAgent))]
 public class SC_CowBrain : MonoBehaviour
 {
+    // Private variables
+    private bool seekingFood = true;
+
     // Protected variables
-    protected GameObject[] fields; // Tagged as Field    
+    protected GameObject[] fields; // Tagged as Field
     protected RigidbodyFirstPersonController rbFpController;
     protected NavMeshAgent m_Agent;
     protected Camera m_Cam;
@@ -26,32 +29,74 @@ public class SC_CowBrain : MonoBehaviour
     protected Vector3 currentDestination; // Keeps track of destination while agent disabled
     protected float wanderTime = 0.0f;
     protected bool wandering = true;
-    
-    // Serialized protected variables
-    [SerializeField] protected float fieldRadius = 5.0f;
-    [SerializeField] private bool seekingFood = true;    
-    [SerializeField] protected int wanderRadius = 100;
-    [SerializeField] protected float maxWanderTime = 10.0f;
-    [SerializeField] protected float idleTime = 3.0f;
-    [SerializeField] protected float maxSpeed = 8.0f;
-    [SerializeField] protected float recoveryTime = 3.0f;    
-    [SerializeField] protected bool tugWhenGrappled = false;
-    [SerializeField] protected bool aiControlled = true;
+
+    // Public variables
+    [Header("Public")]
+    public float maxSpeed = 8.0f;
+    public float maxWanderTime = 10.0f;
+    public float milk = 10.0f;
+    public bool tugWhenGrappled = false;
 
     // Serialized private variables
-    [Space]
+    [Header("Private")]
     [SerializeField] private AudioClip cowMoo = null; // Set up in inspector
-    [SerializeField] private float milk = 10.0f;
+
+    // Serialized protected variables
+    [Header("Protected")]
+    [SerializeField] protected float fieldRadius = 5.0f;
+    [SerializeField] protected int wanderRadius = 100;
+    [SerializeField] protected float idleTime = 3.0f;
+    [SerializeField] protected float recoveryTime = 3.0f;
+    [SerializeField] protected bool aiControlled = true;
+
+    // Get mass of rigidbody
+    public float GetMass()
+    {
+        return GetComponent<Rigidbody>().mass;
+    }
+
+    // Get local scale of transform
+    public float GetSize()
+    {
+        return transform.localScale.x;
+    }
+
+    // Set rigidbody mass
+    public void SetMass(float _mass)
+    {
+        GetComponent<Rigidbody>().mass = _mass;
+    }
+
+    // Set transform local scale
+    public void SetSize(float _size)
+    {
+        transform.localScale = Vector3.one * _size;
+    }
+
+    // Set max speed and agent speed
+    public void SetMaxSpeed(float _maxSpeed)
+    {
+        maxSpeed = _maxSpeed;
+
+        if (!m_Agent)
+            return;
+
+        if (wandering || seekingFood)
+            m_Agent.speed = maxSpeed;
+    }
 
     // Awake is called after all objects are initialized
     private void Awake()
     {
+        // Retrieve components
         m_Agent = GetComponent<NavMeshAgent>();
         m_Cam = GetComponentInChildren<Camera>();
         m_AudioSource = GetComponent<AudioSource>();
         m_Animator = GetComponentInChildren<Animator>();
         rbFpController = GetComponent<RigidbodyFirstPersonController>();
         fields = GameObject.FindGameObjectsWithTag("Field");
+
+        // If AI controlled, disable player controls and set destination
         if (aiControlled)
         {
             SetPlayerControlled(false);
@@ -62,6 +107,8 @@ public class SC_CowBrain : MonoBehaviour
         {
             SetPlayerControlled(true);
         }
+
+        // Cow immediately seeks food after spawning
         SeekFood();
     }
 
@@ -72,6 +119,7 @@ public class SC_CowBrain : MonoBehaviour
         {
             if (!seekingFood)
             {
+                // Seek food after done wandering
                 if (wandering && wanderTime < maxWanderTime)
                 {
                     wanderTime += Time.deltaTime;
@@ -84,10 +132,14 @@ public class SC_CowBrain : MonoBehaviour
             if (m_Agent.remainingDistance <= fieldRadius)
             {
                 Wander();
+
+                // Play cow moo audio clip
                 if (m_AudioSource && cowMoo)
                     m_AudioSource.PlayOneShot(cowMoo);
             }
         }
+
+        // Set animator parameter
         if (m_Animator)
             m_Animator.SetFloat("speed", m_Agent.velocity.magnitude);
     }
@@ -97,9 +149,8 @@ public class SC_CowBrain : MonoBehaviour
     {
         if (seekingFood && collision.gameObject.tag == "Field")
         {
-            StartCoroutine(Idle());
             SatisfyHunger();
-        }        
+        }
     }
 
     // Allow agent to be knocked over
@@ -124,6 +175,7 @@ public class SC_CowBrain : MonoBehaviour
         
         if (this)
         {
+            // Smoothly rotate object upright
             while (transform.localEulerAngles.z > 1f && transform.localEulerAngles.z < 359f)
             {
                 Rigidbody rb = GetComponent<Rigidbody>();
@@ -142,53 +194,14 @@ public class SC_CowBrain : MonoBehaviour
                 yield return null;
             }
 
+            // Remove obstacle component and re-enable agent
             if (GetComponent<NavMeshObstacle>())
                 Destroy(GetComponent<NavMeshObstacle>());
+            
             m_Agent.enabled = true;
             if (!m_Agent.hasPath)
                 m_Agent.destination = currentDestination;
         }
-    }
-    
-    public float GetMilk()
-    {
-        return milk;
-    }
-
-    public float GetMaxSpeed()
-    {
-        return maxSpeed;
-    }
-    
-    public float GetMaxWanderTime()
-    {
-        return maxWanderTime;
-    }
-
-    public bool GetTugWhenGrappled()
-    {
-        return tugWhenGrappled;
-    }
-
-    public void SetMilk(float _milk)
-    {
-        milk = _milk;
-    }
-
-    public void SetMaxSpeed(float _maxSpeed)
-    {
-        maxSpeed = _maxSpeed;
-        m_Agent.speed = maxSpeed;
-    }
-
-    public void SetMaxWanderTime(float _maxWanderTime)
-    {
-        maxWanderTime = _maxWanderTime;
-    }
-
-    public void SetTugWhenGrappled(bool _tugWhenGrappled)
-    {
-        tugWhenGrappled = _tugWhenGrappled;
     }
 
     // Set destination as the closest field
@@ -198,6 +211,7 @@ public class SC_CowBrain : MonoBehaviour
             return;
         
         seekingFood = true;
+        wandering = false;
 
         // Find the closest field
         float minDist = Mathf.Infinity;
@@ -220,8 +234,7 @@ public class SC_CowBrain : MonoBehaviour
     private void SatisfyHunger()
     {
         seekingFood = false;
-        wandering = true;
-        Wander();
+        StartCoroutine(Idle());
     }
 
     // Choose a random destination
@@ -230,6 +243,7 @@ public class SC_CowBrain : MonoBehaviour
         if (!m_Agent.enabled)
             return;
         
+        wandering = true;
         m_Agent.destination = Random.insideUnitSphere * wanderRadius;
         currentDestination = m_Agent.destination;
         m_Agent.stoppingDistance = 0f;
@@ -244,6 +258,7 @@ public class SC_CowBrain : MonoBehaviour
         yield return new WaitForSeconds(idleTime);
 
         m_Agent.speed = maxSpeed;
+        Wander();
     }
 
     // Toggle between AI controlled and Player controlled

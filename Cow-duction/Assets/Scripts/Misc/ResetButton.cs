@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class ResetButton : MonoBehaviour
 {
-    [SerializeField] private GameManager gameManager;
+    private GameManager gameManager;
     
     // Awake is called after all objects are initialized
     void Awake()
@@ -18,6 +18,6 @@ public class ResetButton : MonoBehaviour
     // Call reset game from game manager
     public void ResetGame()
     {
-        gameManager.ResetGame();
+        StartCoroutine(gameManager.ResetGame());
     }
 }

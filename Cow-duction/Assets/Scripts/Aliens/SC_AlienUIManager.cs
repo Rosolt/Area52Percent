@@ -23,32 +23,39 @@ public class SC_AlienUIManager : MonoBehaviour
     private AudioSource ufoAudioSource;
     private int score;
     private float fuel; // Percentage of 100
-    private float fuelDepletionRate = 1.0f;
-    private float fuelWarnAmount = 25.0f;
-    private float abilityActiveTime = 3.0f;
-    private float abilityCooldown; // Percentage of 100    
-    private float cooldownRegenerationRate = 5.0f;
+    private float abilityCooldown; // Percentage of 100
     private bool cooldownActive;
     private float timeRemaining; // In seconds
-    private float timeScaleFactor;
 
     // Public variables
+    [Header("Public")]
     public GameObject CowSpawner;
+    public float fuelDepletionRate = 1.0f;
+    public float fuelWarnAmount = 25.0f;
+    public float abilityActiveTime = 3.0f;
+    public float cooldownRegenerationRate = 5.0f;
+    public float timeScaleFactor = 1.0f;
+    public float timeMax = 240.0f;
+    public bool unlimitedTime = false;
 
     // Serialized private variables
+    [Header("Private")]
     [SerializeField] private Camera topDownCamera = null; // Set up in inspector
     [SerializeField] private Color fuelStartColor = Color.white; // (Optional) Set up in inspector
     [SerializeField] private Color fuelDepletedColor = Color.red; // (Optional) Set up in inspector
     [SerializeField] private AudioClip activateAbility = null; // Set up in inspector
     [SerializeField] private Image hudDisplay = null; // Set up in inspector
+    
     [Space] // Cow icon
     [SerializeField] private Image cowIcon = null; // Set up in inspector
     [SerializeField] private Sprite cowSprite = null; // Set up inspector
     [SerializeField] private Sprite notCowSprite = null; // Set up in inspector
+    
     [Space] // Reticle icon
     [SerializeField] private Image reticle = null; // Set up in inspector
     [SerializeField] private Sprite normalReticle = null; // Set up in inspector
     [SerializeField] private Sprite disabledReticle = null; // Set up in inspector
+    
     [Space] // Flight status
     [SerializeField] private Text scoreText = null; // Set up in inspector
     [SerializeField] private Text speedText = null; // Set up in inspector
@@ -59,11 +66,19 @@ public class SC_AlienUIManager : MonoBehaviour
     [SerializeField] private Image fuelMeterFill = null; // Set up in inspector
     [SerializeField] private Slider cooldownMeter = null; // Set up in inspector
     [SerializeField] private Text cooldownReadyText = null; // Set up in inspector
+
     [Space] // Non Gameplay UI Elements
     [SerializeField] private GameObject endScreen = null; // Set up in inspector
     [SerializeField] private Text finalScoreText = null; // Set up in inspector
     [SerializeField] private GameObject helpScreen = null; // Set up in inspector
     [SerializeField] private GameObject parameterScreen = null; // Set up in inspector
+
+    // Set max time and also update time remaining
+    public void SetTimeMax(float _timeMax)
+    {
+        timeMax = _timeMax;
+        timeRemaining = timeMax;
+    }
 
     // Awake is called after all objects are initialized
     void Awake()
@@ -86,14 +101,14 @@ public class SC_AlienUIManager : MonoBehaviour
         fuel = 100.0f;
         abilityCooldown = 100.0f;
         cooldownActive = false;
-        timeRemaining = 240.0f;
-        if (timeScaleFactor < Mathf.Epsilon)
-            timeScaleFactor = 1.0f;
         Time.timeScale = timeScaleFactor;
+
+        if (timeMax < 0.0f)
+            timeMax = 240.0f;
+        timeRemaining = timeMax;
 
         // Deactivate non-gameplay menus
         endScreen.SetActive(false);
-        parameterScreen.SetActive(false);
         helpScreen.SetActive(false);
     }
 
@@ -141,18 +156,25 @@ public class SC_AlienUIManager : MonoBehaviour
         }
 
         // Update time (Unscaled)
-        if (timeRemaining > 0.0f && !endScreen.activeSelf)
+        if (!unlimitedTime)
         {
-            timeRemaining -= Time.unscaledDeltaTime;
-            int minutes = Mathf.FloorToInt(timeRemaining / 60.0f);
-            int seconds = Mathf.FloorToInt(timeRemaining % 60.0f);
-            timeText.text = minutes + ":" + seconds.ToString("D2");
+            if (timeRemaining > 0.0f && !endScreen.activeSelf)
+            {
+                timeRemaining -= Time.unscaledDeltaTime;
+                int minutes = Mathf.FloorToInt(timeRemaining / 60.0f);
+                int seconds = Mathf.FloorToInt(timeRemaining % 60.0f);
+                timeText.text = minutes + ":" + seconds.ToString("D2");
+            }
+            else
+            {
+                timeRemaining = 0.0f;
+                timeText.text = "0:00";
+                DisplayEndScreen();
+            }
         }
         else
         {
-            timeRemaining = 0.0f;
-            timeText.text = "0:00";
-            DisplayEndScreen();
+            timeText.text = "--:--";
         }
 
         // Activate ability
@@ -164,6 +186,8 @@ public class SC_AlienUIManager : MonoBehaviour
         // Toggle parameter screen
         if (Input.GetButtonDown("Cancel"))
         {
+            if (helpScreen.activeSelf)
+                ToggleHelpScreen();
             ToggleParameterScreen();
         }
     }
@@ -175,6 +199,12 @@ public class SC_AlienUIManager : MonoBehaviour
             reticle.sprite = disabledReticle;
         else
             reticle.sprite = normalReticle;
+    }
+
+    // Set the color of the reticle
+    public void SetReticleColor(Color color)
+    {
+        reticle.color = color;
     }
 
     // Enable or disable cow icon

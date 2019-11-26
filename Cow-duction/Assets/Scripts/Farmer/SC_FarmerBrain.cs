@@ -19,21 +19,38 @@ public class SC_FarmerBrain : SC_CowBrain
     private int ammoCount;
     private bool lockedOn;
     private bool seekingAmmo;
-    
+
+    // Public variables
+    [Header("Public")]
+    public float lockOnDistance = 20.0f;
+    public float lockOnSpeed = 5.0f;
+    public float aimSpeed = 5.0f;
+    public float projectileSpeed = 100.0f;
+    public float projectileDamage = 5.0f;
+    public float projectileKnockback = 5.0f;
+    public float projectileLife = 5.0f;
+    public float fireRate = 3.0f;
+    public int startingAmmo = 5;
 
     // Serialized private variables
+    [Header("Private")]
     [SerializeField] private Transform gunShotOrigin = null; // Set up in inspector
-    [SerializeField] private GameObject projectile = null; // Set up in inspector
+    [SerializeField] private GameObject projectilePrefab = null; // Set up in inspector
     [SerializeField] private AudioClip shotgunPump = null; // Set up in inspector
-    [SerializeField] private AudioClip shotgunShot = null; // Set up in inspector    
-    [Space]
-    [SerializeField] private float lockOnDistance = 20.0f;
-    [SerializeField] private float lockOnSpeed = 5.0f;
-    [SerializeField] private float aimSpeed = 5.0f;
-    [SerializeField] private float projectileSpeed = 100.0f;
-    [SerializeField] private float projectileLife = 5.0f;
-    [SerializeField] private float fireRate = 3.0f;
-    [SerializeField] private int startingAmmo = 5;
+    [SerializeField] private AudioClip shotgunShot = null; // Set up in inspector
+
+    // Set max speed and agent speed
+    public new void SetMaxSpeed(float _maxSpeed)
+    {
+        base.SetMaxSpeed(_maxSpeed);
+        
+        if (!m_Agent)
+            return;
+
+        if (!lockedOn)
+            m_Agent.speed = maxSpeed;
+        
+    }
 
     // Awake is called after all objects are initialized
     void Awake()
@@ -79,6 +96,7 @@ public class SC_FarmerBrain : SC_CowBrain
             }
             if (!lockedOn)
             {
+                // Smoothly rotate to face forward
                 m_Cam.transform.rotation = Quaternion.Slerp(m_Cam.transform.rotation, transform.rotation, lockOnSpeed * Time.deltaTime);
                 m_Animator.transform.rotation = Quaternion.Slerp(m_Animator.transform.rotation, transform.rotation, lockOnSpeed * Time.deltaTime);
 
@@ -100,15 +118,19 @@ public class SC_FarmerBrain : SC_CowBrain
             }
             else if (!seekingAmmo)
             {
+                // Set destination to UFO xz-position
                 m_Agent.destination = new Vector3(targetTransform.position.x, 0, targetTransform.position.z);
                 currentDestination = m_Agent.destination;
                 
+                // Smoothly rotate camera towards UFO
                 Quaternion targetRotation = Quaternion.LookRotation(targetTransform.position - m_Cam.transform.position);
                 m_Cam.transform.rotation = Quaternion.Slerp(m_Cam.transform.rotation, targetRotation, lockOnSpeed * Time.deltaTime);
                 
+                // Smoothly rotate farmer model towards UFO
                 Vector3 farmerForward = new Vector3(m_Cam.transform.forward.x, 0, m_Cam.transform.forward.z);
                 m_Animator.transform.forward = Vector3.Lerp(farmerForward, m_Animator.transform.forward, lockOnSpeed * Time.deltaTime);
 
+                // Disengage if too far away from UFO or if UFO is invisible
                 if ((Vector3.Distance(transform.position, targetTransform.position) > lockOnDistance) ||
                     (!targetTransform.GetComponentInChildren<MeshRenderer>().enabled))
                 {
@@ -120,6 +142,8 @@ public class SC_FarmerBrain : SC_CowBrain
                 }
             }
         }
+
+        // Set animator parameter
         if (m_Animator)
             m_Animator.SetFloat("speed", m_Agent.velocity.magnitude);
     }
@@ -137,15 +161,18 @@ public class SC_FarmerBrain : SC_CowBrain
     // Move towards and aim at target
     private void LockOn()
     {
+        // Do not lock on if seeking ammo
         if (seekingAmmo)
             return;
 
+        // Do not lock on if UFO is invisible
         if (!targetTransform.GetComponentInChildren<MeshRenderer>().enabled)
         {
             Disengage();
             return;
         }
         
+        // Do not lock on if UFO is not in line of sight
         Debug.DrawRay(m_Cam.transform.position, (targetTransform.position - m_Cam.transform.position), Color.yellow);
         if (Physics.Raycast(m_Cam.transform.position, (targetTransform.position - m_Cam.transform.position), out RaycastHit hit))
         {
@@ -160,8 +187,12 @@ public class SC_FarmerBrain : SC_CowBrain
         wandering = false;
         m_Agent.speed = aimSpeed;
         fireCooldown = 0.0f;
+
+        // Set animator parameter
         if (m_Animator)
             m_Animator.SetBool("lockedOn", lockedOn);
+        
+        // Play gun pump audio clip
         if (m_AudioSource)
             m_AudioSource.PlayOneShot(shotgunPump);
     }
@@ -173,6 +204,7 @@ public class SC_FarmerBrain : SC_CowBrain
         wandering = true;
         m_Agent.speed = maxSpeed;
 
+        // Set animator parameter
         if (m_Animator)
             m_Animator.SetBool("lockedOn", lockedOn);
     }
@@ -180,13 +212,22 @@ public class SC_FarmerBrain : SC_CowBrain
     // Shoot a projectile from gunShotOrigin
     private void FireWeapon()
     {
-        GameObject projectileClone = Instantiate(projectile, gunShotOrigin);
-        projectileClone.transform.parent = null;
+        // Assume gunShotOrigin is parented to the camera
+        GameObject projectileClone = Instantiate(projectilePrefab, gunShotOrigin.position, gunShotOrigin.rotation);
         projectileClone.GetComponent<Rigidbody>().AddForce(gunShotOrigin.forward * projectileSpeed, ForceMode.Impulse);
+
+        // Apply farmer projectile parameters
+        SC_Projectile projectile = projectileClone.GetComponent<SC_Projectile>();
+        if (projectile)
+        {
+            projectile.SetProjectileDamage(projectileDamage);
+            projectile.SetProjectileKnockback(projectileKnockback);
+        }
 
         fireCooldown = 0.0f;
         ammoCount--;
-
+        
+        // Look for closest field if out of ammo
         if (ammoCount < 1)
         {
             Disengage();
@@ -206,14 +247,15 @@ public class SC_FarmerBrain : SC_CowBrain
             m_Agent.stoppingDistance = fieldRadius;
             seekingAmmo = true;
         }
-
+        
+        // Play gun shot audio clip
         if (m_AudioSource)
             m_AudioSource.PlayOneShot(shotgunShot);
 
         StartCoroutine(DestroyClone(projectileClone));
     }
 
-    // Add ammo to ammoCount
+    // Refill ammo to startingAmmo then wander
     private void RefillAmmo()
     {
         ammoCount = startingAmmo;

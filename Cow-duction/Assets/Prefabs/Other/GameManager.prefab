@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5985823112423376993}
   - component: {fileID: 6698562216214427980}
-  - component: {fileID: 223452745030644449}
+  - component: {fileID: 9115613695302541384}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: GameManager
@@ -44,8 +44,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da8c87f2aa5da4ebc93d6f7adc8ce072, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiManager: {fileID: 0}
---- !u!114 &223452745030644449
+  cowBase: {fileID: 7443585058275148887, guid: 3cb1fabc6f1a14d1581868dc5c7b3be8, type: 3}
+  farmerBase: {fileID: 8382776846411489560, guid: 9ddb9d2d384e049488a31665613b798c,
+    type: 3}
+  sliders: []
+  parameterMenu: {fileID: 0}
+  spaceshipSliders: {fileID: 0}
+  cowSliders: {fileID: 0}
+  farmerSliders: {fileID: 0}
+--- !u!114 &9115613695302541384
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

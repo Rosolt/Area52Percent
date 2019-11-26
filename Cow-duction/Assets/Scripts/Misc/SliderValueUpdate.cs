@@ -1,6 +1,7 @@
 ﻿/*  SliderValueUpdate.cs
+    (DEPRECATED)
 
-    Updates text string to match slider value.
+    Updates text string to match slider value. 
 */
 
 using UnityEngine;
@@ -8,21 +9,21 @@ using UnityEngine.UI;
 
 public class SliderValueUpdate : MonoBehaviour
 {
-    private Text myText;
-    [SerializeField] private Slider mySlider = null; // Set up in inspector
+    private Text m_Text;
+    [SerializeField] private Slider m_Slider = null; // Set up in inspector
 
     // Start is called before the first frame update
     void Start()
     {
-        myText = GetComponent<Text>();
+        m_Text = GetComponent<Text>();
     }
 
     // Update is called once per frame
     public void UpdateValue()
     {
-        if(mySlider.wholeNumbers)
-            myText.text = mySlider.value.ToString();
+        if (m_Slider.wholeNumbers)
+            m_Text.text = m_Slider.value.ToString();
         else
-            myText.text = mySlider.value.ToString("F2");
+            m_Text.text = m_Slider.value.ToString("F2");
     }
 }

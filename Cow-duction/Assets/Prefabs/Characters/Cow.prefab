@@ -89,17 +89,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 03a387b2a29bf41da99eacb38836ec71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fieldRadius: 5
-  seekingFood: 1
-  wanderRadius: 125
-  maxWanderTime: 20
-  idleTime: 3
   maxSpeed: 5
-  recoveryTime: 4
-  tugWhenGrappled: 0
-  aiControlled: 1
-  cowMoo: {fileID: 8300000, guid: dd4141b9b87034b34b09ed67110fc272, type: 3}
+  maxWanderTime: 20
   milk: 10
+  tugWhenGrappled: 0
+  cowMoo: {fileID: 8300000, guid: dd4141b9b87034b34b09ed67110fc272, type: 3}
+  fieldRadius: 5
+  wanderRadius: 125
+  idleTime: 3
+  recoveryTime: 4
+  aiControlled: 1
 --- !u!136 &8363444690370700327
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -335,11 +334,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cow_GameExport
       objectReference: {fileID: 0}
-    - target: {fileID: -6057140222963153312, guid: 5454526abd4844622bf5fe52fc3cbed6,
-        type: 3}
-      propertyPath: m_Controller
-      value: 
-      objectReference: {fileID: 9100000, guid: f1113f5dc7cba4ffabbdd7a102afde68, type: 2}
     - target: {fileID: -4216859302048453862, guid: 5454526abd4844622bf5fe52fc3cbed6,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -410,6 +404,11 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 20
       objectReference: {fileID: 0}
+    - target: {fileID: -6057140222963153312, guid: 5454526abd4844622bf5fe52fc3cbed6,
+        type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: f1113f5dc7cba4ffabbdd7a102afde68, type: 2}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5454526abd4844622bf5fe52fc3cbed6, type: 3}
 --- !u!4 &5875304817866252306 stripped

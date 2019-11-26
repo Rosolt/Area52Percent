@@ -18,6 +18,7 @@ public class SC_SpaceshipMovement : MonoBehaviour
     private bool grounded;
 
     // Public variables
+    [Header("Public")]
     public float horizontalSpeed = 10.0f;
     public float groundSpeed = 1.0f;
     public float verticalSpeed = 10.0f;
@@ -165,16 +166,7 @@ public class SC_SpaceshipMovement : MonoBehaviour
         // Constant upward force keeping the spaceship floating
         _rb.AddForce(Vector3.up * -Physics.gravity.y, ForceMode.Acceleration);
     }
-
-    // Toggles invert look for camera up and down rotation
-    public void ToggleInvertLook()
-    {
-        if (invertLook)
-            invertLook = false;
-        else
-            invertLook = true;
-    }
-
+    
     // Apply a force on the spaceship for physical feedback
     public void AddImpulseForce(Vector3 dir, float force)
     {

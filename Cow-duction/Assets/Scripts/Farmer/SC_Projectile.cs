@@ -8,7 +8,6 @@
         Layer 12 is "Farmer" and layer 13 is "UFO".
  */
 
-using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -19,33 +18,53 @@ public class SC_Projectile : MonoBehaviour
     private GameObject targetObject;
 
     // Serialized private variables
-    [SerializeField] private GameObject milkLeak = null; // Set up in inspector    
+    [Header("Private")]
+    [SerializeField] private GameObject milkLeak = null; // Set up in inspector
     [SerializeField] private AudioClip projectileHit = null; // Set up in inspector
     [Space]
     [SerializeField] private float projectileDamage = 5.0f;
-    [SerializeField] private float knockbackForce = 3.0f;
+    [SerializeField] private float projectileKnockback = 3.0f;
+
+    // Set projectile damage
+    public void SetProjectileDamage(float _projectileDamage)
+    {
+        projectileDamage = _projectileDamage;
+    }
+
+    // Set projectile knockback
+    public void SetProjectileKnockback(float _projectileKnockback)
+    {
+        projectileKnockback = _projectileKnockback;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         uIManager = GameObject.FindWithTag("UIManager").GetComponent<SC_AlienUIManager>();
         targetObject = GameObject.Find("UFO");
-    }    
+    }
 
     // Destroy projectile on collision
     private void OnCollisionEnter(Collision collision)
     {
+        // Only deal damage to UFO
         if (collision.gameObject.layer == 13) // 13 = UFO
         {
             if (uIManager)
             {
-                targetObject.GetComponent<SC_SpaceshipMovement>().AddImpulseForce(GetComponent<Rigidbody>().velocity.normalized, knockbackForce);
+                // Add impulse force on UFO
+                targetObject.GetComponent<SC_SpaceshipMovement>().AddImpulseForce(GetComponent<Rigidbody>().velocity.normalized, projectileKnockback);
+                // Call UI Manager to apply damage
                 uIManager.TakeDamage(projectileDamage);
                 
+                // Instantiate milk leak at point of collision
                 GameObject milkLeakClone = Instantiate(milkLeak, collision.GetContact(0).point, Quaternion.identity);
-                milkLeakClone.transform.parent = targetObject.transform;      
+                milkLeakClone.transform.parent = targetObject.transform;
+
+                // Play projectile hit audio clip
                 milkLeakClone.AddComponent<AudioSource>().PlayOneShot(projectileHit, 0.25f);
 
+                // Destroy self
                 Destroy(gameObject);
             }
         }

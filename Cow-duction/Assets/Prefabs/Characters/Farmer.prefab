@@ -6390,29 +6390,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2c0e917fa8c744f6789d77f8188fd315, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fieldRadius: 1
-  seekingFood: 1
-  wanderRadius: 125
-  maxWanderTime: 10
-  idleTime: 2
   maxSpeed: 8
-  recoveryTime: 3
-  tugWhenGrappled: 1
-  aiControlled: 1
-  cowMoo: {fileID: 0}
+  maxWanderTime: 10
   milk: 10
-  gunShotOrigin: {fileID: 7973970648433542027}
-  projectile: {fileID: 4683752739078331823, guid: 056b47b2813fa4f82b6ca27c7fcbfadf,
-    type: 3}
-  shotgunPump: {fileID: 8300000, guid: 7118fd2d23c9f43dd90249535b923d9b, type: 3}
-  shotgunShot: {fileID: 8300000, guid: 93a624bcf30374c49897347f7078a064, type: 3}
+  tugWhenGrappled: 1
+  cowMoo: {fileID: 0}
+  fieldRadius: 1
+  wanderRadius: 125
+  idleTime: 2
+  recoveryTime: 3
+  aiControlled: 1
   lockOnDistance: 50
   lockOnSpeed: 5
   aimSpeed: 2
   projectileSpeed: 100
+  projectileDamage: 5
+  projectileKnockback: 5
   projectileLife: 5
   fireRate: 2.5
   startingAmmo: 5
+  gunShotOrigin: {fileID: 7973970648433542027}
+  projectilePrefab: {fileID: 4683752739078331823, guid: 056b47b2813fa4f82b6ca27c7fcbfadf,
+    type: 3}
+  shotgunPump: {fileID: 8300000, guid: 7118fd2d23c9f43dd90249535b923d9b, type: 3}
+  shotgunShot: {fileID: 8300000, guid: 93a624bcf30374c49897347f7078a064, type: 3}
 --- !u!114 &2111464652121166664
 MonoBehaviour:
   m_ObjectHideFlags: 0

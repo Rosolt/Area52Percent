@@ -655,5 +655,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1cec185491fcd4cb2879271425996d50, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  myText: {fileID: 0}
-  mySlider: {fileID: 299680701875226978}
+  m_Slider: {fileID: 299680701875226978}
